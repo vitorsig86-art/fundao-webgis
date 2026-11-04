@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { appTitle } from "./appTitle";
 import { projects } from "./projects";
 import { LayerPanel } from "./components/LayerPanel";
@@ -257,6 +258,7 @@ export function App() {
         </button>)}
       </nav>
       <AboutDialog project={project} open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <Analytics />
     </main>
   );
 }
