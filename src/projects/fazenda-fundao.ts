@@ -34,16 +34,17 @@ export const orthomosaic: ProjectLayerConfig = {
 const r2 = "https://pub-17801b8889694ba2a7b6688bcaa05ada.r2.dev";
 const geojson = (file: string) => `${r2}/geojson/${file}`;
 
-// Área de estudo com a simulação 3D. O botão abre a simulação sobre o mapa sem
+// Áreas de estudo com as simulações 3D. O botão abre a simulação sobre o mapa sem
 // mover a câmera (flyTo false) e, ao fechar, a câmera fica onde estava
-// (onClose "keep"); a origem está liberada em embeddedPages. Ligada na abertura
-// do desktop e desligada na do celular. Sem openOnHome: o popup só abre ao
-// clicar ou tocar no polígono.
+// (onClose "keep"); as origens estão liberadas em embeddedPages. Ligadas na
+// abertura do desktop e desligadas na do celular. Sem openOnHome: o popup só abre
+// ao clicar ou tocar no polígono.
 const simulationUrl = "https://suinocultura-3d.vercel.app/";
-const areaEstudo: ProjectLayerConfig = {
-  id: "area-estudo", name: "Área de Estudo", description: "Simulação 3D", kind: "vector", defaultVisible: true, defaultVisibleMobile: false, panelOrder: 1, opacityControl: true,
+const simulation2Url = "https://suinocultura2-3d.vercel.app/";
+const studyArea = (id: string, name: string, file: string, url: string, panelOrder: number): ProjectLayerConfig => ({
+  id, name, description: "Simulação 3D", kind: "vector", defaultVisible: true, defaultVisibleMobile: false, panelOrder, opacityControl: true,
   source: {
-    format: "geojson", url: geojson("area_estudo_simulacao.geojson"), autoZoom: false,
+    format: "geojson", url: geojson(file), autoZoom: false,
     style: { stroke: "#FF6A00", strokeWidth: 3, fill: "#FF6A00", fillOpacity: 0.18, clampToGround: true, zIndex: 25 },
     popup: {
       titleProperty: "nome",
@@ -51,10 +52,12 @@ const areaEstudo: ProjectLayerConfig = {
         { property: "area_ha", label: "Área", decimals: 2, suffix: " ha" },
         { property: "perimetro_km", label: "Perímetro", decimals: 2, suffix: " km" },
       ],
-      actions: [{ label: "Entrar na simulação 3D", url: simulationUrl, flyTo: false, onClose: "keep" }],
+      actions: [{ label: "Entrar na simulação 3D", url, flyTo: false, onClose: "keep" }],
     },
   },
-};
+});
+const areaEstudo = studyArea("area-estudo", "Área de Estudo 1", "area_estudo_simulacao.geojson", simulationUrl, 1);
+const areaEstudo2 = studyArea("area-estudo-2", "Área de Estudo 2", "area_estudo_simulacao2.geojson", simulation2Url, 3);
 
 // Derivados do relevo: legenda desenhada no próprio raster, um por vez sobre o orto.
 // Bounds = tiles inteiros do nível mínimo, não o contorno dos dados: só limitam
@@ -75,7 +78,7 @@ const mdsBounds: GeographicBounds = [-45.0000, -23.2413, -44.2969, -22.5937];
 
 // Limite do imóvel no estilo das Matrículas do Ivan: só contorno amarelo.
 const areaImovel: ProjectLayerConfig = {
-  id: "area-imovel", name: "Área do Imóvel", description: "Área do Imóvel", kind: "property-boundary", defaultVisible: true, panelOrder: 2,
+  id: "area-imovel", name: "Área do Imóvel", description: "Área do Imóvel", kind: "property-boundary", defaultVisible: true, panelOrder: 5,
   source: {
     format: "geojson", url: geojson("area_imovel.geojson"), autoZoom: false,
     style: { stroke: "#FFD400", strokeWidth: 2.5, fillOpacity: 0, clampToGround: true, zIndex: 20 },
@@ -88,22 +91,24 @@ const areaImovel: ProjectLayerConfig = {
 };
 
 // Só contorno branco, acima da área de estudo.
-const piquetes: ProjectLayerConfig = {
-  id: "piquetes", name: "Divisão de Piquetes", description: "Divisão de Piquetes", kind: "vector", defaultVisible: true, panelOrder: 3,
+const paddocks = (id: string, name: string, file: string, panelOrder: number): ProjectLayerConfig => ({
+  id, name, description: name, kind: "vector", defaultVisible: true, panelOrder,
   source: {
-    format: "geojson", url: geojson("divisao_piquetes.geojson"), autoZoom: false,
+    format: "geojson", url: geojson(file), autoZoom: false,
     style: { stroke: "#FFFFFF", strokeWidth: 1.5, fillOpacity: 0, clampToGround: true, zIndex: 26 },
     popup: { titleProperty: "nome", fields: [
       { property: "area_ha", label: "Área", decimals: 2, suffix: " ha" },
       { property: "perimetro_m", label: "Perímetro", format: "integer", suffix: " m" },
     ] },
   },
-};
+});
+const piquetes = paddocks("piquetes", "Divisão de Piquetes 1", "divisao_piquetes.geojson", 2);
+const piquetes2 = paddocks("piquetes-2", "Divisão de Piquetes 2", "divisao_piquetes2.geojson", 4);
 
 // Uma cor por microbacia pelo atributo "cor" (0 a 9): preenchimento e contorno iguais.
 const microbaciaColors = ["#E6194B", "#3CB44B", "#FFE119", "#4363D8", "#F58231", "#911EB4", "#42D4F4", "#F032E6", "#BFEF45", "#FABED4"];
 const microbacias: ProjectLayerConfig = {
-  id: "microbacias", name: "Microbacias", description: "Microbacias", kind: "vector", defaultVisible: false, panelOrder: 4, opacityControl: true,
+  id: "microbacias", name: "Microbacias", description: "Microbacias", kind: "vector", defaultVisible: false, panelOrder: 6, opacityControl: true,
   source: {
     format: "geojson", url: geojson("microbacias_1.geojson"), autoZoom: false,
     style: {
@@ -121,7 +126,7 @@ const microbacias: ProjectLayerConfig = {
 };
 
 const curvas3: ProjectLayerConfig = {
-  id: "curvas3", name: "Curvas de Nível (3 m)", description: "Curvas de Nível (3 m)", kind: "contours", defaultVisible: false, panelOrder: 5,
+  id: "curvas3", name: "Curvas de Nível (3 m)", description: "Curvas de Nível (3 m)", kind: "contours", defaultVisible: false, panelOrder: 7,
   source: {
     format: "geojson", url: geojson("curvas_3m_1.geojson"), autoZoom: false,
     style: { stroke: "#000000", strokeWidth: 1, clampToGround: true, zIndex: 5 },
@@ -131,7 +136,7 @@ const curvas3: ProjectLayerConfig = {
 
 // Ordem de Strahler por classificação simples. Este arquivo só tem ordens 1 a 3.
 const drenagem: ProjectLayerConfig = {
-  id: "drenagem", name: "Drenagem", description: "Drenagem", kind: "drainage", defaultVisible: false, panelOrder: 6,
+  id: "drenagem", name: "Drenagem", description: "Drenagem", kind: "drainage", defaultVisible: false, panelOrder: 8,
   source: {
     format: "geojson", url: geojson("linhas_drenagem.geojson"), autoZoom: false,
     style: {
@@ -215,9 +220,11 @@ export const project: ProjectConfig = {
     areaImovel,
     areaEstudo,
     piquetes,
+    areaEstudo2,
+    piquetes2,
   ],
-  // Páginas que os popups podem abrir sobre o mapa (simulação 3D da área de estudo).
-  embeddedPages: { allowedOrigins: [new URL(simulationUrl).origin] },
+  // Páginas que os popups podem abrir sobre o mapa (simulações 3D das áreas de estudo).
+  embeddedPages: { allowedOrigins: [new URL(simulationUrl).origin, new URL(simulation2Url).origin] },
   panel: {
     showLayerSearch: false,
     sectionOrder: ["basemap", "model", "raster", "vector", "macro"],
