@@ -15,6 +15,7 @@
     "prepare-geojson": "node scripts/prepare-geojson.cjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "cesium": "^1.147.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
